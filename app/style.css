@@ -1,12 +1,164 @@
-html, body { margin: 0; height: 100%; background: #f2f0f4; color: #1d1b22; font: 15px/1.4 system-ui, sans-serif; }
-.app { display: flex; gap: 32px; align-items: center; justify-content: center; height: 100%; padding: 24px; box-sizing: border-box; }
-.controls { display: flex; flex-direction: column; gap: 14px; width: 280px; }
-.controls h1 { margin: 0; font-size: 28px; }
-.controls p { margin: 0; color: #5c5866; }
-label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; }
-input[type=text] { font: inherit; padding: 8px; border: 1px solid #c9c4d1; border-radius: 6px; }
-button { font: inherit; font-weight: 700; padding: 10px; border: 0; border-radius: 6px; background: #1d1b22; color: #fff; cursor: pointer; }
-canvas { width: min(70vh, 60vw); height: min(70vh, 60vw); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); }
-body.shot-cover .controls { display: none; }
-body.shot-cover .app { padding: 0; }
-body.shot-cover canvas { width: 100vw; height: 100vh; box-shadow: none; }
+/* Vice Nights — dark neon editor chrome. All local, no web fonts here. */
+@font-face {
+  font-family: "Anton";
+  src: url("./fonts/Anton-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --bg: #12081f;
+  --panel: #1d0f33;
+  --panel-edge: #3a1c63;
+  --ink: #f5efff;
+  --muted: #b9a8d6;
+  --accent: #ff5e7a;
+  --accent2: #ffb03d;
+  --cyan: #2ee6ff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: radial-gradient(1200px 600px at 80% -10%, #4a1a6e 0%, transparent 60%),
+              radial-gradient(900px 500px at -10% 110%, #7a2a3d 0%, transparent 55%),
+              var(--bg);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  min-height: 100vh;
+}
+
+.topbar {
+  padding: 18px 24px 6px;
+  border-bottom: 2px solid var(--panel-edge);
+}
+
+.topbar h1 {
+  margin: 0;
+  font-family: "Anton", system-ui, sans-serif;
+  font-size: 44px;
+  letter-spacing: 4px;
+  background: linear-gradient(90deg, var(--accent2), var(--accent) 45%, #b04dff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.tagline { margin: 4px 0 12px; color: var(--muted); font-size: 14px; }
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) 1fr;
+  gap: 18px;
+  padding: 18px 24px 28px;
+  align-items: start;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+
+.panel h2 {
+  font-family: "Anton", system-ui, sans-serif;
+  letter-spacing: 2px;
+  font-size: 19px;
+  margin: 18px 0 8px;
+  color: var(--accent2);
+}
+.panel h2:first-child { margin-top: 0; }
+
+.hint { color: var(--muted); font-size: 13px; margin: 4px 0 10px; }
+
+.controls label { display: block; margin: 8px 0; font-size: 14px; }
+.controls input[type="text"], .controls select {
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--panel-edge);
+  background: #150a28;
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.slot {
+  border: 1px dashed var(--panel-edge);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin: 8px 0;
+}
+.slot.loaded { border-style: solid; border-color: var(--cyan); }
+
+.filelabel { cursor: pointer; font-weight: 600; }
+.filelabel input { display: block; margin-top: 6px; font-weight: 400; }
+
+.sliders { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.sliders label { font-size: 12px; color: var(--muted); }
+.sliders input[type="range"] { width: 100%; accent-color: var(--accent); }
+
+.sample-row, .export-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 9px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a0b2e;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+}
+button:hover { filter: brightness(1.12); }
+button.ghost {
+  background: transparent;
+  color: var(--cyan);
+  border: 1px solid var(--cyan);
+  width: 100%;
+  margin-top: 6px;
+}
+
+#status { min-height: 20px; color: var(--cyan); font-size: 13px; }
+
+.preview canvas {
+  display: block;
+  width: 100%;
+  max-width: 540px;
+  height: auto;
+  margin: 0 auto;
+  border-radius: 6px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+}
+
+.exportview {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 3, 16, 0.94);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 50;
+  padding: 20px;
+}
+.exportview[hidden] { display: none; }
+.exportview img { max-width: 92vw; max-height: 82vh; border-radius: 6px; }
+.exportview button { align-self: flex-end; }
+
+/* Shot modes: a clean page so a screenshot is just the app or just the cover. */
+body.shot-cover .topbar, body.shot-cover .controls { display: none; }
+body.shot-cover { background: #0a0512; }
+body.shot-cover .layout { display: block; padding: 0; }
+body.shot-cover .preview { background: none; border: none; padding: 0; }
+body.shot-cover .preview h2, body.shot-cover .preview .hint { display: none; }
+body.shot-cover .preview canvas { max-width: none; width: auto; height: 100vh; max-height: 100vh; border-radius: 0; box-shadow: none; }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .topbar h1 { font-size: 34px; }
+}
